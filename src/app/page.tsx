@@ -1,113 +1,217 @@
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable react/no-unescaped-entities */
+
+"use client"
+
+import { Dialog, Transition } from '@headlessui/react'
+import { Fragment, useState } from 'react'
+import { CgSpinner } from "react-icons/cg";
+import { IoMdCheckmark } from "react-icons/io";
+import { Permanent_Marker } from 'next/font/google'
 import Image from 'next/image'
 
+const font = Permanent_Marker({
+  subsets: ['latin'],
+  weight: '400'
+})
+
+interface InputCaptchaState {
+  [key: string]: boolean;
+}
+
+const initialInputCaptcha = {
+  '1': false,
+  '2': false,
+  '3': false,
+  '4': false,
+  '5': false,
+  '6': false,
+  '7': false,
+  '8': false,
+  '9': false,
+}
+
 export default function Home() {
+  const [isOpen, setIsOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isVerify, setIsVerify] = useState(false)
+  const [isFailed, setIsFailed] = useState(false)
+  const [failedMsg, setFailedMsg] = useState('')
+  const [inputCaptcha, setInputCaptcha] = useState<InputCaptchaState>(initialInputCaptcha);
+
+  const handleVerifyButton = () => {
+    if (Object.values(inputCaptcha).filter((value) => value).length < 3) {
+      setIsFailed(true)
+      setInputCaptcha(initialInputCaptcha)
+      setFailedMsg('Click at least 3 images')
+      return;
+    }
+    if (inputCaptcha[3] || inputCaptcha[4] || inputCaptcha[6] || inputCaptcha[7]) {
+      setIsFailed(true)
+      setInputCaptcha(initialInputCaptcha)
+      setFailedMsg('Try Again..')
+      return;
+    }
+    setIsOpen(false);
+    setIsLoading(true);
+
+    setTimeout(() => {
+      setIsLoading(false)
+      setIsVerify(true);
+    }, 1500);
+  }
+
+  const changeValueAtIndex = (index: any) => {
+    setInputCaptcha({
+      ...inputCaptcha,
+      [index]: !inputCaptcha[index],
+    })
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <main className='relative'>
+      <Transition
+        show={isLoading || isVerify}
+        enter="transition-opacity duration-600"
+        enterFrom="opacity-0"
+        enterTo="opacity-100"
+        leave="transition-opacity duration-150"
+        leaveFrom="opacity-100"
+        leaveTo="opacity-0"
+      >
+        <img className='absolute inset-0 w-full h-full object-cover -z-10 h-screen filter blur-sm brightness-50' src="/wpp.jpg" alt="" />
+      </Transition>
+      <div className='z-10 h-screen max-w-xs mx-auto flex items-center'>
+        <div className='w-full'>
+          <div className='pb-12'>
+            <Transition
+              show={isVerify}
+              enter="transition-opacity duration-300"
+              enterFrom="opacity-0"
+              enterTo="opacity-100"
+              leave="transition-opacity duration-150"
+              leaveFrom="opacity-100"
+              leaveTo="opacity-0"
+            >
+              <h1 className={'text-white font-bold text-center text-5xl ' + font.className}>
+                SAVE PALESTINE
+              </h1>
+            </Transition>
+          </div>
+          <div className='flex items-center p-3 rounded-sm border border-neutral-300 text-black gap-x-4' style={{
+            backgroundColor: '#f9f9f9'
+          }}>
+            {
+              isLoading ? (
+                <button disabled className='animate-spin '><CgSpinner className='text-4xl text-blue-500' /></button>
+              ) : (
+                isVerify ? (
+                  <button disabled className=''><IoMdCheckmark className='text-4xl text-green-500' /></button>
+                ) : (
+                  <button className='w-8 h-8 border-2 border-neutral-300 rounded-sm bg-white' onClick={() => { setIsOpen(true) }} />
+                )
+              )
+            }
+            <h1 className='text-sm flex-1'>
+              I'm human
+            </h1>
+            <div className='text-center' style={{
+              fontSize: '0.6em'
+            }}>
+              <img className='mx-auto' width={32} height={32} src="https://forum.nox.tv/core/index.php?media/9-recaptcha-png/" alt="" />
+              <h1>reCAPTCHA</h1>
+              <p style={{
+                fontSize: '0.85em'
+              }}>
+                <a target='_blank' href="https://www.google.com/intl/en/policies/privacy/">Privacy</a> - <a target='_blank' href="https://www.google.com/intl/en/policies/terms/">Terms</a>
+              </p>
+            </div>
+          </div>
+          <div className='py-4'>
+            <Transition
+              show={isVerify}
+              enter="transition-opacity duration-300"
+              enterFrom="opacity-0"
+              enterTo="opacity-100"
+              leave="transition-opacity duration-150"
+              leaveFrom="opacity-100"
+              leaveTo="opacity-0"
+              className={'text-center'}
+            >
+              <p className='text-white font-bold text-sm pb-16'>You don't need to be a Muslim to stand up for Palestine, You just need to be Human.</p>
+              <p className='text-white font-medium text-xs '>by</p>
+              <a target='_blank' href='https://lowscarlet.my.id/' className='text-white font-medium italic text-xs '>@Low_Scarlet</a>
+            </Transition>
+          </div>
         </div>
       </div>
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+      <Transition appear show={isOpen} as={Fragment}>
+        <Dialog as="div" className="relative z-10" onClose={() => {
+          setIsOpen(false)
+        }}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-neutral-200 bg-opacity-75" />
+          </Transition.Child>
 
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
+          <div className="fixed inset-0 overflow-y-auto select-none">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="max-w-sm">
+                  <div className='bg-white rounded-sm p-1 m-4 border border-neutural-300'>
+                    <div className='flex bg-blue-500 rounded-sm p-2 text-xs text-white'>
+                      <div className='flex-1'>
+                        <h2>Select all images with</h2>
+                        <h1 className='font-bold text-base'>oppresed</h1>
+                        <h2>Click verify once there none left</h2>
+                      </div>
+                      <div>
+                        <Image width={64} height={64} src={`/captcha/2.png`} alt="" />
+                      </div>
+                    </div>
+                    <div className='grid grid-cols-3 gap-1 py-1'>
+                      {Array.from({ length: 9 }, (_, i) => i + 1).map((e) => (
+                        <button
+                          className={inputCaptcha[e] ? 'border border-green-500 border-4' : ''}
+                          key={e}
+                          onClick={() => changeValueAtIndex(e)}
+                        >
+                          <Image width={900} height={900} src={`/captcha/${e}.png`} alt="" />
+                        </button>
+                      ))}
+                    </div>
+                    <div className={`py-2 ${isFailed ? '' : 'hidden'}`}>
+                      <p className='text-red-500 text-center text-xs'>{failedMsg}</p>
+                    </div>
+                    <div className='flex py-2'>
+                      <div className='flex-1'></div>
+                      <div>
+                        <button className='bg-blue-500 rounded-sm py-2 px-6 text-white text-xs' onClick={handleVerifyButton}>VERIFY</button>
+                      </div>
+                    </div>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
     </main>
   )
 }
